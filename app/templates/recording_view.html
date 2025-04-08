@@ -37,7 +37,212 @@
       {% endif %}
     </div>
   </div>
-  <a href="{{ url_for('dashboard.recording_edit', recording_id=recording.id) }}" class="btn btn-primary">Edit Recording</a>
-  <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Back to Dashboard</a>
+  <a href="{{ url_for('dashboard.recording_edit', recording_id=recording.id) }}" class="btn btn-primary">
+    Edit Recording
+  </a>
+  <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">
+    Back to Dashboard
+  </a>
 </div>
+
+<!-- FLOATING ACTION BUTTON (FAB) -->
+<button type="button"
+        class="btn"
+        style="
+          position: fixed; 
+          bottom: 2rem; 
+          right: 2rem; 
+          width: 60px; 
+          height: 60px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #42a5f5 0%, #478ed1 100%);
+          color: #fff;
+          box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+          font-size: 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;"
+        data-bs-toggle="modal"
+        data-bs-target="#chatModal">
+  <i class="fas fa-comments"></i>
+</button>
+
+<!-- CHAT MODAL -->
+<div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="chatModalLabel">Chat About This Transcript</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-3">
+        <!-- Chat messages container -->
+        <div id="chatMessages"
+             class="mb-3"
+             style="max-height: 400px; overflow-y: auto;">
+          <!-- Filled by JavaScript -->
+        </div>
+
+        <!-- Message input -->
+        <div class="input-group">
+          <input type="text" id="chatInput" class="form-control" placeholder="Type your message...">
+          <button class="btn btn-primary" id="sendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM STYLES -->
+<style>
+  /* Chat bubble styles */
+  .chat-bubble {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    margin: 0.4rem 0;
+    border-radius: 1rem;
+    max-width: 70%;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+  /* Assistant (AI) bubble style */
+  .assistant-bubble {
+    background-color: #f1f3f5;
+    color: #333;
+    align-self: flex-start;
+  }
+  /* User bubble style */
+  .user-bubble {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    align-self: flex-end;
+  }
+  /* Container for messages with flex display to position them left or right */
+  .message-container {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 0.5rem;
+  }
+  .message-container.user .chat-bubble {
+    margin-left: auto;
+    background-color: #d1ecf1;
+    color: #0c5460;
+  }
+  .message-container.assistant .chat-bubble {
+    margin-right: auto;
+    background-color: #f1f3f5;
+    color: #333;
+  }
+</style>
+
+<script>
+  const recordingId = {{ recording.id }}; // So we know which recording to associate with
+  let chatSessionId = null;             // Will store the newly created/fetched chat session ID
+
+  // On modal show, create or fetch an existing chat session for this user+recording
+  const chatModal = document.getElementById('chatModal');
+  chatModal.addEventListener('show.bs.modal', async () => {
+    // Only create the session once
+    if (!chatSessionId) {
+      chatSessionId = await createChatSession(recordingId);
+      // Then load existing messages
+      await loadChatMessages(chatSessionId);
+    }
+  });
+
+  // Send button logic
+  document.getElementById('sendBtn').addEventListener('click', async () => {
+    await sendMessage();
+  });
+
+  // Also allow pressing Enter
+  document.getElementById('chatInput').addEventListener('keypress', async (e) => {
+    if (e.key === 'Enter') {
+      await sendMessage();
+    }
+  });
+
+  async function createChatSession(recId) {
+    try {
+      const response = await fetch(`/chat/session/with-recording/${recId}`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data.session_id;
+      } else {
+        console.error('Failed to create session');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    return null;
+  }
+
+  async function loadChatMessages(sessionId) {
+    if (!sessionId) return;
+    try {
+      const response = await fetch(`/chat/session/${sessionId}/messages`);
+      if (!response.ok) throw new Error('Failed to load messages');
+      const data = await response.json();
+      const chatMessagesDiv = document.getElementById('chatMessages');
+      chatMessagesDiv.innerHTML = ''; // Clear the container
+
+      // For each message, create a bubble-like div
+      data.messages.forEach(msg => {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.classList.add('message-container', msg.role);
+
+        const bubble = document.createElement('div');
+        bubble.classList.add('chat-bubble');
+        if (msg.role === 'assistant') {
+          bubble.classList.add('assistant-bubble');
+        } else if (msg.role === 'user') {
+          bubble.classList.add('user-bubble');
+        } else {
+          // system or other roles can be styled differently if needed
+          bubble.classList.add('assistant-bubble');
+        }
+
+        bubble.textContent = msg.content;
+        messageWrapper.appendChild(bubble);
+        chatMessagesDiv.appendChild(messageWrapper);
+      });
+
+      // Scroll to bottom of the chat container
+      chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function sendMessage() {
+    if (!chatSessionId) return;
+    const inputEl = document.getElementById('chatInput');
+    const userMessage = inputEl.value.trim();
+    if (!userMessage) return;
+
+    // Clear input
+    inputEl.value = '';
+
+    try {
+      const resp = await fetch(`/chat/session/${chatSessionId}/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ message: userMessage })
+      });
+      const data = await resp.json();
+      if (data.error) {
+        console.error('Chat error:', data.error);
+      } else {
+        // The assistant reply is in data.reply
+        await loadChatMessages(chatSessionId);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+</script>
+
 {% endblock %}

@@ -1,0 +1,30 @@
+<!-- templates/new_chat.html -->
+
+{% extends 'base.html' %}
+{% block title %}New Chat Session - Memory AI Project{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h2>Create a New Chat Session</h2>
+  <form method="POST">
+    <div class="mb-3">
+      <label for="title" class="form-label">Session Title (optional)</label>
+      <input type="text" name="title" id="title" class="form-control" placeholder="e.g., Transcript Discussion">
+    </div>
+
+    <!-- New: multi-select of transcripts -->
+    <div class="mb-3">
+      <label for="recordings" class="form-label">Select Relevant Transcripts</label>
+      <select name="recordings" id="recordings" class="form-select" multiple>
+        {% for rec in user_recordings %}
+          <option value="{{ rec.id }}">
+            {{ rec.timestamp.strftime("%Y-%m-%d %H:%M:%S") }} - {{ rec.summary[:50] }}{% if rec.summary|length > 50 %}...{% endif %}
+          </option>
+        {% endfor %}
+      </select>
+      <small class="text-muted">Use Ctrl/Cmd + click to select multiple transcripts.</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Start Chat</button>
+  </form>
+</div>
+{% endblock %}

@@ -46,3 +46,35 @@ class Todo(db.Model):
 
     def __repr__(self):
         return f"<Todo {self.id} - {self.description}>"
+
+# Association table for ChatSession <-> Recording
+chat_session_recording = db.Table(
+    'chat_session_recording',
+    db.Column('chat_session_id', db.Integer, db.ForeignKey('chat_session.id'), primary_key=True),
+    db.Column('recording_id', db.Integer, db.ForeignKey('recording.id'), primary_key=True)
+)
+
+class ChatSession(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Add the relationship to Recording
+    recordings = db.relationship('Recording', secondary=chat_session_recording, backref='chat_sessions')
+
+    def __repr__(self):
+        return f"<ChatSession {self.id} - {self.title}>"
+
+class ChatMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('chat_session.id'), nullable=False)
+    role = db.Column(db.String(50), nullable=False)  # 'system', 'assistant', 'user'
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationship to parent session
+    session = db.relationship('ChatSession', backref='messages')
+
+    def __repr__(self):
+        return f"<ChatMessage {self.id} in Session {self.session_id}>"

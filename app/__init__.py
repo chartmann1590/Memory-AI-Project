@@ -28,4 +28,8 @@ def create_app(config_class=Config):
     from app.dashboard import dashboard_bp
     app.register_blueprint(dashboard_bp)
 
+    # Blueprint for chat
+    from app.chat import chat_bp
+    app.register_blueprint(chat_bp)
+
     return app

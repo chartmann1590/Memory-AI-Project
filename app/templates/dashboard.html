@@ -38,51 +38,62 @@
     <div class="col-md-6">
       <!-- Active To-Do List -->
       <div class="card shadow-sm mb-3">
-        <div class="card-header">
-          <h4>To-Do List</h4>
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">To-Do List</h4>
+          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#activeTodos" aria-expanded="true">
+            Toggle
+          </button>
         </div>
-        <div class="card-body">
-          <form id="todo-form">
-            <div class="input-group mb-3">
-              <input type="text" id="new-todo" class="form-control" placeholder="Add new to-do item">
-              <button class="btn btn-outline-primary" type="submit">Add</button>
-            </div>
-          </form>
-          <ul class="list-group">
-            {% if todos %}
-              {% for todo in todos %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span class="{% if todo.completed %}completed{% endif %}">
-                    <input type="checkbox" data-id="{{ todo.id }}" class="me-2 todo-checkbox" {% if todo.completed %}checked{% endif %}>
-                    {{ todo.description }}
-                  </span>
-                  <button class="btn btn-sm btn-danger delete-todo" data-id="{{ todo.id }}">Delete</button>
-                </li>
-              {% endfor %}
-            {% else %}
-              <li class="list-group-item text-muted">No to-do items yet.</li>
-            {% endif %}
-          </ul>
+        <div class="collapse show" id="activeTodos">
+          <div class="card-body">
+            <form id="todo-form">
+              <div class="input-group mb-3">
+                <input type="text" id="new-todo" class="form-control" placeholder="Add new to-do item">
+                <button class="btn btn-outline-primary" type="submit">Add</button>
+              </div>
+            </form>
+            <ul class="list-group">
+              {% if todos %}
+                {% for todo in todos %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="{% if todo.completed %}completed{% endif %}">
+                      <input type="checkbox" data-id="{{ todo.id }}" class="me-2 todo-checkbox" {% if todo.completed %}checked{% endif %}>
+                      {{ todo.description }}
+                    </span>
+                    <button class="btn btn-sm btn-danger delete-todo" data-id="{{ todo.id }}">Delete</button>
+                  </li>
+                {% endfor %}
+              {% else %}
+                <li class="list-group-item text-muted">No to-do items yet.</li>
+              {% endif %}
+            </ul>
+          </div>
         </div>
       </div>
+
       <!-- Archived To-Do List -->
       <div class="card shadow-sm mb-3">
-        <div class="card-header">
-          <h4>Archived To-Do List</h4>
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">Archived To-Do List</h4>
+          <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#archivedTodos" aria-expanded="true">
+            Toggle
+          </button>
         </div>
-        <div class="card-body">
-          <ul class="list-group">
-            {% if archived_todos %}
-              {% for todo in archived_todos %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span class="{% if todo.completed %}completed{% endif %}">{{ todo.description }}</span>
-                  <button class="btn btn-sm btn-warning unarchive-todo" data-id="{{ todo.id }}">Unarchive</button>
-                </li>
-              {% endfor %}
-            {% else %}
-              <li class="list-group-item text-muted">No archived to-do items.</li>
-            {% endif %}
-          </ul>
+        <div class="collapse show" id="archivedTodos">
+          <div class="card-body">
+            <ul class="list-group">
+              {% if archived_todos %}
+                {% for todo in archived_todos %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="{% if todo.completed %}completed{% endif %}">{{ todo.description }}</span>
+                    <button class="btn btn-sm btn-warning unarchive-todo" data-id="{{ todo.id }}">Unarchive</button>
+                  </li>
+                {% endfor %}
+              {% else %}
+                <li class="list-group-item text-muted">No archived to-do items.</li>
+              {% endif %}
+            </ul>
+          </div>
         </div>
       </div>
       <!-- Past Recordings -->

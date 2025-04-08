@@ -2,14 +2,128 @@
 {% block title %}Home - Memory AI Project{% endblock %}
 
 {% block content %}
-  <div class="text-center py-5">
-    <h1 class="display-4">Welcome to the Memory AI Project</h1>
-    <p class="lead">An innovative solution combining local AI and recorded memories.</p>
+
+<style>
+
+  body {
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+  }
+  .card {
+    transition: transform 0.3s ease;
+  }
+  .card:hover {
+    transform: scale(1.03);
+  }
+  .carousel-caption {
+    backdrop-filter: blur(5px);
+  }
+
+</style>
+<div class="container py-5">
+  <!-- Welcome Header -->
+  <div class="text-center mb-5">
+    <h1 class="display-4 fw-bold">Welcome to the <span class="text-primary">Memory AI Project</span> <i class="fas fa-robot"></i> <i class="fas fa-lightbulb"></i></h1>
+    <p class="lead mt-3">Transform your thoughts into smart tasks. Record. Transcribe. Remember. All with privacy-first AI.</p>
+  </div>
+
+  <!-- Feature Blocks -->
+  <div class="row text-center g-4">
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <i class="fas fa-microphone-alt fa-2x text-primary mb-3"></i>
+          <h5 class="card-title">Record Audio</h5>
+          <p class="card-text">Capture meetings, ideas, and moments effortlessly on the go.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <i class="fas fa-file-alt fa-2x text-success mb-3"></i>
+          <h5 class="card-title">Auto Transcription</h5>
+          <p class="card-text">Instantly turn speech into accurate, structured text.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <i class="fas fa-tasks fa-2x text-warning mb-3"></i>
+          <h5 class="card-title">Extract To-Dos</h5>
+          <p class="card-text">Generate actionable tasks from your recordings automatically.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <i class="fas fa-shield-alt fa-2x text-danger mb-3"></i>
+          <h5 class="card-title">Privacy First</h5>
+          <p class="card-text">Local LLM ensures your data is always private and secure.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Section -->
+  <div class="row mt-5">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+      <img src="{{ url_for('static', filename='images/about.jpg') }}" class="img-fluid rounded shadow" alt="About Image">
+    </div>
+    <div class="col-lg-6">
+      <h2><i class="fas fa-info-circle text-primary"></i> About the Project</h2>
+      <p class="fs-5">The Memory AI Project merges cutting-edge AI and real-life journaling. It’s like having a second brain that actually listens. Whether it's daily reflections or critical meetings — capture, analyze, and organize effortlessly.</p>
+    </div>
+  </div>
+
+  <!-- Carousel Showcase -->
+<div class="my-5">
+  <h2 class="text-center mb-4"><i class="fas fa-images text-info"></i> Project in Action</h2>
+  <div id="showcaseCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner rounded shadow overflow-hidden" style="max-height: 400px;">
+      <div class="carousel-item active">
+        <img src="{{ url_for('static', filename='images/showcase1.jpg') }}" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="Recording in action">
+        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
+          <h5><i class="fas fa-microphone-alt"></i> Record</h5>
+          <p>Capture ideas, conversations, and thoughts effortlessly.</p>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <img src="{{ url_for('static', filename='images/showcase2.jpg') }}" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="Transcription process">
+        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
+          <h5><i class="fas fa-file-alt"></i> Transcribe</h5>
+          <p>Fast and accurate transcription with a single click.</p>
+        </div>
+      </div>
+      <div class="carousel-item">
+        <img src="{{ url_for('static', filename='images/showcase3.jpg') }}" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="Dashboard view">
+        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
+          <h5><i class="fas fa-tachometer-alt"></i> Dashboard</h5>
+          <p>Your control center for memory and task management.</p>
+        </div>
+      </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#showcaseCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#showcaseCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+</div>
+
+  <!-- Call to Action -->
+  <div class="text-center my-5">
+    <h3 class="fw-semibold mb-3">Start transforming your thoughts into action today.</h3>
     {% if not current_user.is_authenticated %}
-      <hr class="my-4">
-      <p>Please login or create an account to explore the project.</p>
-      <a class="btn btn-primary btn-lg me-2" href="{{ url_for('auth.login') }}" role="button">Login</a>
-      <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('auth.register') }}" role="button">Register</a>
+      <a class="btn btn-primary btn-lg me-2" href="{{ url_for('auth.login') }}"><i class="fas fa-user-lock"></i> Login</a>
+      <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus"></i> Register</a>
+    {% else %}
+      <p class="lead"><i class="fas fa-check-circle text-success"></i> You’re logged in! Visit your <a href="{{ url_for('dashboard.index') }}">Dashboard</a>.</p>
     {% endif %}
   </div>
+</div>
 {% endblock %}

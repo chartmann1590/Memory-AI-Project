@@ -49,7 +49,7 @@ def upload():
         "Please generate a concise summary of the following transcript and extract important notes:\n\n"
         f"{transcript}"
     )
-    ollama_url = current_app.config.get("OLLAMA_API_URL")
+    ollama_url = current_app.config.get("OLLAMA_API_URL") + "/generate"
     ollama_model = current_app.config.get("OLLAMA_MODEL")
     payload = {"model": ollama_model, "prompt": prompt, "stream": False}
     try:
@@ -157,7 +157,7 @@ def regenerate_summary(recording_id):
         "Please generate a concise summary of the following transcript and extract important notes:\n\n"
         + transcript
     )
-    ollama_url = current_app.config.get("OLLAMA_API_URL")
+    ollama_url = current_app.config.get("OLLAMA_API_URL") + "/generate"
     ollama_model = current_app.config.get("OLLAMA_MODEL")
     payload = {"model": ollama_model, "prompt": prompt, "stream": False}
     try:
