@@ -1,6 +1,6 @@
 # 🧠 Memory AI Project
 
-Welcome to the **Memory AI Project** — a smart, innovative solution combining local AI technology with memory transcription, summarization, task management, and Single Sign-On (SSO) authentication.
+Welcome to the **Memory AI Project** — a smart, innovative solution combining local AI technology with memory transcription, summarization, task management, speaker tagging, chat capabilities, and Single Sign-On (SSO) authentication.
 
 ## 🚀 Features
 
@@ -18,10 +18,14 @@ Welcome to the **Memory AI Project** — a smart, innovative solution combining 
 
 - **Task Management** ✅
   - Add, complete, and archive tasks easily.
-  - Intuitive dashboard to manage your tasks and recordings.
+  - Intuitive dashboard to manage tasks and recordings.
 
 - **Speaker Tagging** 🗣️
-  - Easily tag and identify speakers in recordings.
+  - Easily tag and identify speakers within audio recordings.
+
+- **Chat with Recordings** 💬
+  - Start chat sessions referencing selected transcriptions.
+  - Interact naturally with the integrated AI for detailed insights.
 
 - **Responsive and User-Friendly Interface** 🎨
   - Clean, Bootstrap-based design for optimal usability.
@@ -51,7 +55,7 @@ pip install -r requirements.txt
 ```
 
 ### ⚙️ Environment Configuration
-Create a `.env` file based on `config.py`:
+Create a `.env` file based on the provided `.env` template:
 
 ```env
 SECRET_KEY=your_secret_key
@@ -88,19 +92,24 @@ memory-ai-project/
 ├── app/
 │   ├── __init__.py
 │   ├── auth.py
+│   ├── chat.py
 │   ├── dashboard.py
 │   ├── models.py
 │   └── templates/
 │       ├── base.html
+│       ├── chat.html
+│       ├── chat_session.html
 │       ├── dashboard.html
 │       ├── index.html
 │       ├── login.html
-│       ├── register.html
+│       ├── new_chat.html
 │       ├── recording_edit.html
 │       ├── recording_view.html
+│       ├── register.html
 │       └── sso_callback.html
 ├── config.py
 ├── requirements.txt
+├── .env
 └── run.py
 ```
 
@@ -117,4 +126,3 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ---
 
 ✨ **Happy Coding!** ✨
-
