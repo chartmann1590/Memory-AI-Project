@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Home - Memory AI Project{% endblock %}
+
+{% block content %}
+  <div class="text-center py-5">
+    <h1 class="display-4">Welcome to the Memory AI Project</h1>
+    <p class="lead">An innovative solution combining local AI and recorded memories.</p>
+    {% if not current_user.is_authenticated %}
+      <hr class="my-4">
+      <p>Please login or create an account to explore the project.</p>
+      <a class="btn btn-primary btn-lg me-2" href="{{ url_for('auth.login') }}" role="button">Login</a>
+      <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('auth.register') }}" role="button">Register</a>
+    {% endif %}
+  </div>
+{% endblock %}

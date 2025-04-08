@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Edit Recording - Memory AI Project{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2>Edit Recording</h2>
+  <form method="post" id="edit-form">
+    <div class="card mb-3">
+      <div class="card-header">
+        <strong>Transcript</strong>
+      </div>
+      <div class="card-body">
+        <textarea id="transcript" name="transcript" class="form-control" rows="6">{{ recording.transcript }}</textarea>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Ollama Summary</strong>
+        <button type="button" id="regen-btn" class="btn btn-sm btn-info">Regenerate Summary</button>
+      </div>
+      <div class="card-body">
+        <textarea id="summary" name="summary" class="form-control" rows="4">{{ recording.summary }}</textarea>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-header">
+        <strong>Tag Speakers in Transcript</strong>
+      </div>
+      <div class="card-body">
+        {% set lines = recording.transcript.split('\n') %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:70%;">Line</th>
+              <th style="width:30%;">Speaker</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for idx in range(lines|length) %}
+              <tr>
+                <td>{{ lines[idx] }}</td>
+                <td>
+                  <input type="text" name="speaker_{{ idx }}" class="form-control"
+                    value="{% if recording.speaker_tags %}{{ recording.speaker_tags | safe | fromjson | dict.get(idx|string, '') }}{% endif %}"
+                    placeholder="Enter speaker">
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a href="{{ url_for('dashboard.recording_view', recording_id=recording.id) }}" class="btn btn-secondary">Back to View</a>
+  </form>
+</div>
+
+<script>
+  // Regenerate Summary via AJAX if transcript is updated.
+  document.getElementById("regen-btn").addEventListener("click", function() {
+    const transcriptText = document.getElementById("transcript").value;
+    const summaryTextarea = document.getElementById("summary");
+    fetch("{{ url_for('dashboard.regenerate_summary', recording_id=recording.id) }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ transcript: transcriptText })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.new_summary) {
+        summaryTextarea.value = data.new_summary;
+        alert("Summary regenerated successfully.");
+      } else {
+        alert("Failed to regenerate summary.");
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      alert("Error regenerating summary.");
+    });
+  });
+</script>
+{% endblock %}

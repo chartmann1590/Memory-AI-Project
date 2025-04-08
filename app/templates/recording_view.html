@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}View Recording - Memory AI Project{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2>Recording Details</h2>
+  <div class="card mb-3">
+    <div class="card-header">
+      <strong>Transcript</strong>
+    </div>
+    <div class="card-body" style="white-space: pre-wrap;">
+      {{ recording.transcript }}
+    </div>
+  </div>
+  <div class="card mb-3">
+    <div class="card-header">
+      <strong>Ollama Summary</strong>
+    </div>
+    <div class="card-body" style="white-space: pre-wrap;">
+      {{ recording.summary }}
+    </div>
+  </div>
+  <div class="card mb-3">
+    <div class="card-header">
+      <strong>Speaker Tags</strong>
+    </div>
+    <div class="card-body">
+      {% if recording.speaker_tags %}
+        {% set tags = recording.speaker_tags | safe | fromjson %}
+        <ul class="list-group">
+          {% for line, speaker in tags.items() %}
+            <li class="list-group-item">Line {{ line }}: {{ speaker }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">No speaker tags available.</p>
+      {% endif %}
+    </div>
+  </div>
+  <a href="{{ url_for('dashboard.recording_edit', recording_id=recording.id) }}" class="btn btn-primary">Edit Recording</a>
+  <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+{% endblock %}

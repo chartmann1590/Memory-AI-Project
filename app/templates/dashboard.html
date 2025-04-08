@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Memory AI Project{% endblock %}
+
+{% block content %}
+
+<style>
+  .completed {
+    text-decoration: line-through;
+  }
+</style>
+
+<div class="container my-4">
+  <h2 class="text-center mb-4">Dashboard</h2>
+  <div class="row">
+    <!-- Left Panel: Recording Controls and Results -->
+    <div class="col-md-6">
+      <div class="card shadow-sm mb-3">
+        <div class="card-body text-center">
+          <h4>Record Audio</h4>
+          <button id="record-button" class="btn btn-danger btn-lg">Record</button>
+          <p id="status" class="mt-3"></p>
+        </div>
+      </div>
+      <div class="card shadow-sm mb-3">
+        <div class="card-body">
+          <h5>Transcription</h5>
+          <p id="transcription-result"></p>
+        </div>
+      </div>
+      <div class="card shadow-sm mb-3">
+        <div class="card-body">
+          <h5>Ollama Summary</h5>
+          <p id="ollama-result"></p>
+        </div>
+      </div>
+    </div>
+    <!-- Right Panel: TODO List and Past Recordings -->
+    <div class="col-md-6">
+      <!-- Active To-Do List -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header">
+          <h4>To-Do List</h4>
+        </div>
+        <div class="card-body">
+          <form id="todo-form">
+            <div class="input-group mb-3">
+              <input type="text" id="new-todo" class="form-control" placeholder="Add new to-do item">
+              <button class="btn btn-outline-primary" type="submit">Add</button>
+            </div>
+          </form>
+          <ul class="list-group">
+            {% if todos %}
+              {% for todo in todos %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span class="{% if todo.completed %}completed{% endif %}">
+                    <input type="checkbox" data-id="{{ todo.id }}" class="me-2 todo-checkbox" {% if todo.completed %}checked{% endif %}>
+                    {{ todo.description }}
+                  </span>
+                  <button class="btn btn-sm btn-danger delete-todo" data-id="{{ todo.id }}">Delete</button>
+                </li>
+              {% endfor %}
+            {% else %}
+              <li class="list-group-item text-muted">No to-do items yet.</li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      <!-- Archived To-Do List -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header">
+          <h4>Archived To-Do List</h4>
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
+            {% if archived_todos %}
+              {% for todo in archived_todos %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span class="{% if todo.completed %}completed{% endif %}">{{ todo.description }}</span>
+                  <button class="btn btn-sm btn-warning unarchive-todo" data-id="{{ todo.id }}">Unarchive</button>
+                </li>
+              {% endfor %}
+            {% else %}
+              <li class="list-group-item text-muted">No archived to-do items.</li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      <!-- Past Recordings -->
+      <div class="card shadow-sm mb-3">
+        <div class="card-header">
+          <h4>Past Recordings</h4>
+        </div>
+        <div class="card-body" style="max-height:300px; overflow-y:auto;">
+          {% if recordings %}
+            <ul class="list-group">
+              {% for rec in recordings %}
+                <a href="{{ url_for('dashboard.recording_view', recording_id=rec.id) }}" class="list-group-item list-group-item-action">
+                  <small class="text-muted">{{ rec.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</small>
+                  <br>
+                  <strong>Transcript:</strong> {{ rec.transcript[:50] }}{% if rec.transcript|length > 50 %}...{% endif %}
+                  <br>
+                  <strong>Summary:</strong> {{ rec.summary[:50] }}{% if rec.summary|length > 50 %}...{% endif %}
+                </a>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-muted">No recordings found.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .completed {
+    text-decoration: line-through;
+  }
+</style>
+
+<script>
+  // Audio recording functionality remains as before...
+  const recordButton = document.getElementById("record-button");
+  const statusText = document.getElementById("status");
+  const transcriptionResult = document.getElementById("transcription-result");
+  const ollamaResult = document.getElementById("ollama-result");
+  let isRecording = false;
+  let mediaRecorder;
+  let audioChunks = [];
+
+  recordButton.addEventListener("click", async function() {
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.start();
+        isRecording = true;
+        recordButton.innerText = "Stop";
+        statusText.innerText = "Recording...";
+        audioChunks = [];
+        mediaRecorder.addEventListener("dataavailable", event => {
+          audioChunks.push(event.data);
+        });
+      } catch (error) {
+        console.error("Error accessing microphone:", error);
+        statusText.innerText = "Error accessing microphone.";
+      }
+    } else {
+      mediaRecorder.stop();
+      isRecording = false;
+      recordButton.innerText = "Record";
+      statusText.innerText = "Processing audio...";
+      mediaRecorder.addEventListener("stop", async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append("audio_file", audioBlob, "recording.webm");
+        try {
+          const response = await fetch("/dashboard/upload", {
+            method: "POST",
+            body: formData
+          });
+          const data = await response.json();
+          transcriptionResult.innerText = data.transcription || "No transcription available.";
+          ollamaResult.innerText = data.summary || "No summary available.";
+          statusText.innerText = "Transcription complete.";
+          setTimeout(() => { location.reload(); }, 2000);
+        } catch (err) {
+          console.error(err);
+          statusText.innerText = "Error processing audio.";
+        }
+      });
+    }
+  });
+
+  // TODO list functionality for active todos
+  document.getElementById("todo-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const newTodoInput = document.getElementById("new-todo");
+      const description = newTodoInput.value.trim();
+      if (description.length === 0) return;
+      fetch("/dashboard/todo/add", {
+         method: "POST",
+         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+         body: new URLSearchParams({ description: description })
+      }).then(() => { location.reload(); });
+  });
+  
+  document.querySelectorAll(".todo-checkbox").forEach(cb => {
+      cb.addEventListener("change", function() {
+          const todoId = this.getAttribute("data-id");
+          fetch("/dashboard/todo/toggle/" + todoId, { method: "POST" })
+            .then(() => location.reload());
+      });
+  });
+  
+  document.querySelectorAll(".delete-todo").forEach(btn => {
+      btn.addEventListener("click", function() {
+          const todoId = this.getAttribute("data-id");
+          fetch("/dashboard/todo/delete/" + todoId, { method: "DELETE" })
+            .then(() => location.reload());
+      });
+  });
+  
+  // Unarchive functionality for archived todos
+  document.querySelectorAll(".unarchive-todo").forEach(btn => {
+      btn.addEventListener("click", function() {
+          const todoId = this.getAttribute("data-id");
+          fetch("/dashboard/todo/unarchive/" + todoId, { method: "POST" })
+            .then(() => location.reload());
+      });
+  });
+</script>
+{% endblock %}
